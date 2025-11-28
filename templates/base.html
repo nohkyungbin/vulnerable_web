@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}취약한 웹 서비스{% endblock %}</title>
+</head>
+<body>
+    <h1>취약한 Flask 웹 서비스</h1>
+    <nav>
+        <a href="{{ url_for('index') }}">홈</a> |
+        <a href="{{ url_for('login') }}">로그인</a> |
+        <a href="{{ url_for('routes') }}">(디버그) 라우트 목록</a>
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>
