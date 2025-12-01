@@ -45,26 +45,24 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # 로그인 화면 + 로그인 처리
     error = None
 
     if request.method == "POST":
         username = request.form.get("username", "")
         password = request.form.get("password", "")
 
-        # ⚠️ 의도적으로 취약한 쿼리 (SQL Injection 가능)
-        query = f"""
+        # ✅ 안전한 쿼리 (파라미터 바인딩 사용)
+        query = """
         SELECT id, username FROM users
-        WHERE username = '{username}' AND password = '{password}';
+        WHERE username = ? AND password = ?;
         """
-
-        print("[*] 실행되는 쿼리:")
-        print(query)
 
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         try:
-            cur.execute(query)
+            # 값은 SQL 문자열에 직접 붙이지 않고,
+            # 두 번째 인자 튜플로 "따로" 전달한다.
+            cur.execute(query, (username, password))
             row = cur.fetchone()
         except Exception as e:
             conn.close()
@@ -80,6 +78,7 @@ def login():
             error = "로그인 실패: 아이디 또는 비밀번호가 올바르지 않습니다."
 
     return render_template("login.html", error=error)
+
 
 
 # 디버깅용: 등록된 모든 라우트 확인
