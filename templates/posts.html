@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}게시판 목록{% endblock %}
+
+{% block content %}
+<h2>게시판</h2>
+<a href="{{ url_for('new_post') }}">글쓰기</a>
+<ul>
+    {% for p in posts %}
+        <li><a href="{{ url_for('view_post', post_id=p[0]) }}">{{ p[1] }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}글 보기{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+<hr>
+
+<!-- XSS 취약점: content를 escape 하지 않고 raw로 출력 -->
+<div>
+    {{ content | safe }}
+</div>
+
+<hr>
+<a href="/posts">목록으로</a>
+{% endblock %}

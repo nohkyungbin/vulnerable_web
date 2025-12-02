@@ -32,6 +32,16 @@ def init_db():
         "INSERT INTO users (username, password) VALUES ('admin', 'admin123');"
     )
 
+    cur.execute(
+        """
+        CREATE TABLE posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL
+        );    
+        """
+    )
+
     conn.commit()
     conn.close()
     print("[+] 초기 DB 생성 완료: 기본 계정 admin / admin123")
@@ -79,7 +89,47 @@ def login():
 
     return render_template("login.html", error=error)
 
+@app.route("/posts")
+def posts():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT id, title FROM posts")
+    rows = cur.fetchall()
+    conn.close()
+    return render_template("posts.html", posts=rows)
 
+@app.route("/post/new", methods=["GET", "POST"])
+def new_post():
+    if request.method == "POST":
+        title = request.form.get("title", "")
+        content = request.form.get("content", "")
+
+        # ⚠ 고의적 취약점: content를 sanitize 하지 않음 (XSS 발생 가능)
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("INSERT INTO posts (title, content) VALUES (?, ?)", (title, content))
+        conn.commit()
+        conn.close()
+
+        return "글이 저장되었습니다. <a href='/posts'>목록으로</a>"
+
+    return render_template("new_post.html")
+
+@app.route("/post/<int:post_id>")
+def view_post(post_id):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT title, content FROM posts WHERE id=?", (post_id,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return "글을 찾을 수 없습니다"
+
+    title, content = row
+
+    # ⚠ 고의적 취약점: content를 escape 하지 않고 그대로 출력
+    return render_template("view_post.html", title=title, content=content)
 
 # 디버깅용: 등록된 모든 라우트 확인
 @app.route("/routes")
